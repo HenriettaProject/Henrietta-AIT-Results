@@ -63,33 +63,38 @@ def hartman_focus_by_peak_finding(datatop, databottom, fwhm_pix=5.0, threshold=1
     
     
 if __name__ == """__main__""":
-    tname = "data/hen6860.fits"
-    bname = "data/hen6861.fits"
+    nums =  [6865, 6864]
+    tname = "data/hen%s.fits" % (nums[0])
+    bname = "data/hen%s.fits" % (nums[1])
     
     
     dt = fits.open(tname)[0].data
     db = fits.open(bname)[0].data
 
     
-    tt, tb, dx, dy = hartman_focus_by_peak_finding(dt, db)
+    tt, tb, dx, dy = hartman_focus_by_peak_finding(dt, db, fwhm_pix=9)
 
     x,y = tt.data.T[0], tt.data.T[1]
 
-    ok = (np.abs(dx-2) < 1) & (np.abs(dy - 5) < 4)
+    ok = (np.abs(dx+2) < 5) & (np.abs(dy + 4) < 2)
+
+    fname = f"RJ_{nums[0]}_{nums[1]}_%s.pdf"
 
     pl.clf()
     pl.figure(1)
+    pl.title("X/Y versus X offset")
     pl.subplot(2,1,1)
     pl.scatter(x[ok], y[ok], c=dx[ok])
     pl.xlabel("X")
     pl.xlabel("y")
-    pl.title("dX")
     pl.colorbar()
 
     pl.subplot(2,1,2)
     pl.scatter(x[ok], y[ok], c=dy[ok])
-    pl.title("dY")
+    pl.title("X/Y versus Y offset")
     pl.colorbar()
+    pl.savefig(fname % ("xy-offset"))
+
 
     pl.figure(2)
     pl.clf()
@@ -100,12 +105,14 @@ if __name__ == """__main__""":
     pl.subplot(2,1,2)
     pl.plot(y[ok], dy[ok], 'o')
     pl.xlabel("Y") ; pl.ylabel("dY")
+    pl.savefig(fname % "X-Y-v-dY")
 
-    
+
     pl.figure(3)
     pl.clf()
     pl.imshow(dt, vmin=-10, vmax=2000)
     pl.plot(x, y, 'b.')
     pl.plot(x[ok]+dx[ok], y[ok]+dy[ok], 'r.')
+    pl.savefig(fname % "image")
 
     
